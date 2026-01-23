@@ -39,7 +39,22 @@ Proposed model:
 
 ## Testing
 
-Dataset will be split into learning and training datasets.
+Dataset will be split into learning and training datasets using sklearn `train_test_split`.
+
+---
+
+# Wanted improvements
+
+Better model testing procedure:
+
+1. Train set → model learning
+2. Validation set → tuning
+3. In-distribution test set → same source, unseen samples
+4. Out-of-distribution (OOD) test set → different source/time
+
+Test character level CNN.  
+Test BERT/transformers.  
+Combined datasets.  
 
 ---
 
