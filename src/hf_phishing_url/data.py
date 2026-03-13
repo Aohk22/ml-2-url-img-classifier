@@ -82,4 +82,3 @@ def split_xy(
     X = df[feature_cols]
     y = df[label_col]
     return X, y
-

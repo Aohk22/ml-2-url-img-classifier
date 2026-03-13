@@ -1,3 +1,8 @@
+'''
+This file contains model pipeline definitions and 
+code for training.
+'''
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -40,17 +45,14 @@ def _build_candidates(random_state: int) -> list[tuple[str, Pipeline]]:
     from sklearn.ensemble import RandomForestClassifier, HistGradientBoostingClassifier
 
     # Keep preprocessing simple: numeric features only.
-    pre = [
-        ("impute", SimpleImputer(strategy="median")),
-        ("scale", StandardScaler()),
-    ]
 
     return [
         (
             "logreg",
             Pipeline(
                 steps=[
-                    *pre,
+                    ("impute", SimpleImputer(strategy="median")),
+                    ("scale", StandardScaler()),
                     ("clf", LogisticRegression(max_iter=3000, class_weight="balanced")),
                 ]
             ),
@@ -139,4 +141,3 @@ def evaluate_on_test(
         scores = model.decision_function(X_test)
         y_score = 1 / (1 + np.exp(-scores))
     return _evaluate_binary(y_test, y_pred, y_score)
-

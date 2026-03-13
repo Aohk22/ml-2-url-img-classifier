@@ -4,11 +4,7 @@ Evaluation: description, training process, results, demonstration.
 
 ## Data preprocessing
 
-**Summary:**
-
-```
-{tokens}, has_ip, length, n_dots, n_underscores, n_dashes, n_numbers
-```
+[Standard feautures.](./notes.md#features)
 
 ### Tokenization
 
@@ -26,9 +22,13 @@ TF-IDF (weighted bag of words).
 
 A set of models will be trained then compared.
 
-Logistic Regression, Random Forest, Character CNN, XGBoost.
+Logistic Regression, Random Forest,  XGBoost.
+
+Character CNN.
 
 # Results
+
+[Models results.](./notes.md#classical-models)
 
 ---
 
@@ -51,4 +51,6 @@ CNN: AlexNet - simple, ReLU as activation function.
 ---
 
 Other resources:  
+
 - [Phishing Detection System Through Hybrid Machine Learning Based on URL](https://ieeexplore.ieee.org/abstract/document/10058201)
+- [ROC-AUC](https://developers.google.com/machine-learning/crash-course/classification/roc-and-auc)

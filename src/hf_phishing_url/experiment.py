@@ -38,7 +38,7 @@ def run_experiment(
         val_size=val_size,
     )
 
-    # Refit best model on the full training split before final test eval.
+    # Refit the best model
     best.pipeline.fit(X_train, y_train)
     test_metrics = evaluate_on_test(best.pipeline, X_test, y_test)
 
