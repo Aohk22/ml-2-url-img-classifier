@@ -217,6 +217,12 @@ From `notebooks/train-standard-features.ipynb` (validation fold):
 |---|---:|---:|---:|---:|---:|
 | hgb | **0.9550** | **0.8792** | 0.8779 | 0.8879 | 0.8681 |
 
+Validation plots:
+
+![ROC (URL-only standard features)](graphs/ROC-manual-features.png)
+
+![Confusion matrix (URL-only standard features)](graphs/CF-manual-features.png)
+
 Interpretation: performance drops relative to the baseline because only URL-syntax information is used (no page content or external signals).
 
 ### 5.3 URL-only + Word2Vec embedding (39 features + pooled Word2Vec)
@@ -226,6 +232,12 @@ From `notebooks/train-standard-and-embedding.ipynb` (validation fold):
 | model | ROC-AUC | accuracy | F1 | precision | recall |
 |---|---:|---:|---:|---:|---:|
 | hgb | **0.9741** | **0.9119** | 0.9123 | 0.9082 | 0.9164 |
+
+Validation plots:
+
+![AUC (URL-only + Word2Vec embedding)](graphs/AUC-manual-features-embed.png)
+
+![Confusion matrix (URL-only + Word2Vec embedding)](graphs/CF-manual-features-embed.png)
 
 Relative to URL-only numeric features:
 
