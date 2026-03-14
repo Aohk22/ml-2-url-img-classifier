@@ -1,6 +1,6 @@
 # Model Training & Data Preprocessing Report (URLs + Images)
 
-Repository: `ml-2-url-img-classifier`  
+Repository: [github.com/Aohk22/ml-2-url-img-classifier](https://github.com/Aohk22/ml-2-url-img-classifier)
 Generated: 2026-03-14
 
 ## 1) Executive summary
