@@ -1,6 +1,5 @@
 '''
-This file contains model pipeline definitions and 
-code for training.
+Code for baseline metrics.
 '''
 
 from __future__ import annotations

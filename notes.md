@@ -1,70 +1,19 @@
 ## Todo
 
 - [x] Data cleaning through model pipeline
-- [x] Choose a model from comparisons
+- [x] Choose a testing model from comparisons
 - [x] Specify a feature standard for future unprocessed data
 - [x] More visualization
     - [x] First rows, null values, label distribution
     - [x] Visualize AUC
-- [ ] Word tokenization into word embedding
+- [x] Word tokenization into word embedding
+
+- [ ] Use a neural network to detect phishing site from images.
+
 - [ ] Character CNN
 - [ ] Add outside database
 
-## Other
-
-Validation set: used during training to make descisions.
-
-Test set: used at the end for estimate of performance.
-
-<!-- //<Explain pipeline definitions> -->
-
-### Metrics explanation
-
-#### Accuracy
-
-(TP+TN) / (TP+TN+FP+FN). Percentage of predictions that are correct.
-
-Can be misleading if dataset is imbalanced.
-
-#### Precision
-
-TP / (TP+FP). 
-
-E.g of all phishing URLs detected, which ones were actually phishing. Important when false alarms are costly.
-
-#### Recall
-
-TP / (TP+FN). True positive rate.
-
-E.g of all phishing URLs, how many were detected. Important for when missing a threat is dangerous.
-
-#### F1 score
-
-F1 = 2 * (Precision * Recall) / (Precision + Recall).
-
-Performance between detecting threats and avoiding false alarms.
-
-#### ROC (receiver-operating characteristic) - AUC
-
-
-ROC curve is drawn by graphing TPR over FPR, it is a visual representation of model performance across all thresholds.
-
-The area under the ROC curve (AUC) represents the probability that the model, if given a randomly chosen positive and negative example, will rank the positive higher than the negative.
-
-Example: An AUC of 1.0 means a classifier will **always** assign a random spam email a higher probability of being spam than a legitimate email.
-
-The model with larger AUC will generally be the better one.
-
-<img src="https://developers.google.com/static/machine-learning/crash-course/images/auc_abc.png" width="50%"/><br/>
-<sub>Credit Google</sub>
-
-A: for lower FPR  
-B: for balance between TPR, FPR  
-C: for higher TPR
-
-This project will be optimized for higher TPR (increase TP and FP)
-
-# Getting started using hugginface dataset
+# Models training
 
 ## Feature extraction
 
@@ -77,11 +26,6 @@ Features are from three different classes:
 - 7 are extracetd by querying external services.
 
 For the feature standard, only features available directly in URL will be taken.
-
-
-### Features
-
-Which features will be extracted.
 
 ```python
 [
@@ -105,7 +49,7 @@ Which features will be extracted.
 ]
 ```
 
-## Classical Models
+## Baseline metrics
 
 ```
 ...trimmed
@@ -151,35 +95,7 @@ All candidates:
    }
 ```
 
-Chosen model construction:
-
-```python
-'''
-Imputer: replace missing values with median of value.
-'''
-(
-    "hgb",
-    Pipeline(
-        steps=[
-            ("impute", SimpleImputer(strategy="median")),
-            (
-            "clf",
-                HistGradientBoostingClassifier(
-                    random_state=random_state,
-                    max_depth=None,
-                    learning_rate=0.1,
-                ),
-            ),
-        ]
-    ),
-),
-```
-
-## What is `HistGradientBoostingClassifier()`
-
-
-
-## Results using manual feature extraction
+## Results using features
 
 ### Confusion matrix
 
@@ -197,42 +113,25 @@ For phising a false negative is very costly therefore we will need to maximize t
 
 ### Summary
 
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
+| | model | roc_auc  | accuracy | f1       | precision | recall (TPR) |
+|--- | ----- | -------- | -------- | -------- | --------- | ------------ |
+| 0| hgb   | 0.961867 | 0.887728 | 0.886991 | 0.892857  | 0.881201     |
 
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
 
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>model</th>
-      <th>roc_auc</th>
-      <th>accuracy</th>
-      <th>f1</th>
-      <th>precision</th>
-      <th>recall (TPR)</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>hgb</td>
-      <td>0.961867</td>
-      <td>0.887728</td>
-      <td>0.886991</td>
-      <td>0.892857</td>
-      <td>0.881201</td>
-    </tr>
-  </tbody>
-</table>
-</div>
+## Results with standard features + word embedding
+
+### Confusion matrix
+
+![CF](./graphs/CF-manual-features-embed.png)
+
+### AUC
+
+![AUC](./graphs/AUC-manual-features-embed.png)
+
+Model acheives even higher AUC with word embedding.
+
+### Summary
+
+| | model | roc_auc | accuracy | f1 | precision | recall |
+|---|---|---|---|---|---|---|
+| 0 | hgb |	0.974091 | 0.91188 | 0.912281 | 0.90815 | 0.916449 |

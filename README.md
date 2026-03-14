@@ -46,6 +46,17 @@ KNN: each image is represented as feature vector (pixel values, color histogram)
 
 CNN: AlexNet - simple, ReLU as activation function.  
 
+# Baseline training (local folders)
+
+If your dataset folder looks like:
+
+- `.../data/{not-phishing,not-phising}/*/screenshots/*.jpg`
+- `.../data/phishing/*/screenshots/*.jpg`
+
+Train a simple scikit-learn baseline with:
+
+`.venv/bin/python scripts/train_phishing_image.py --data-dir /var/my-data/datasets/zenodo-8041387/data`
+
 # Results
 
 ---

@@ -82,10 +82,52 @@ class UrlTokens(TypedDict):
     tld: str
 
 
+class URLFeatures(TypedDict):
+    url: str
+    length_url: int
+    length_hostname: int
+    ip: int
+    nb_dots: int
+    nb_hyphens: int
+    nb_at: int
+    nb_qm: int
+    nb_and: int
+    nb_or: int
+    nb_eq: int
+    nb_underscore: int
+    nb_tilde: int
+    nb_percent: int
+    nb_slash: int
+    nb_star: int
+    nb_colon: int
+    nb_comma: int
+    nb_semicolumn: int
+    nb_dollar: int
+    nb_space: int
+    nb_www: int
+    nb_com: int
+    nb_dslash: int
+    nb_subdomains: int
+    ratio_digits_url: float
+    ratio_digits_host: float
+    http_in_path: int
+    tld_in_path: int
+    tld_in_subdomain: int
+    prefix_suffix: int
+    path_extension: int
+    shortest_words_raw: int
+    shortest_word_host: int
+    shortest_word_path: int
+    longest_words_raw: int
+    longest_word_host: int
+    longest_word_path: int
+    brand_in_subdomain: int
+    brand_in_path: int
+
+
 @dataclass(frozen=True)
 class UrlTokenizer:
     """
-    Tokenize a URL into parts.
     """
 
     def tokenize(self, url: str) -> UrlTokens:
@@ -119,15 +161,12 @@ class UrlTokenizer:
 @dataclass(frozen=True)
 class UrlFeatureExtractor:
     """
-    URL-only feature extraction to match the feature names listed in `notes.md`.
-
-    The output includes `url` (string) plus numeric/boolean features. Booleans are
-    encoded as 0/1 (F,T) ints.
+    Booleans: true = 1, false = 0.
     """
 
     brands: set[str] = field(default_factory=lambda: set(_DEFAULT_BRANDS))
 
-    def extract_one(self, url: str) -> dict[str, int | float | str]:
+    def extract_one(self, url: str) -> URLFeatures:
         tokenizer =  UrlTokenizer()
 
         tokens = tokenizer.tokenize(url)
@@ -142,15 +181,13 @@ class UrlFeatureExtractor:
         subdomain_tokens = tokens.get('subdomain_tokens')
         tld = tokens.get('tld')
 
-        subdomain = _infer_subdomain(host_lower)
-
         digits_url = _count_digits(raw_lower)
         digits_host = _count_digits(host_lower)
 
         length_url = len(normalized)
         length_hostname = len(hostname)
 
-        features: dict[str, int | float | str] = {
+        features: URLFeatures = {
             "url": url,
             "length_url": length_url,
             "length_hostname": length_hostname,

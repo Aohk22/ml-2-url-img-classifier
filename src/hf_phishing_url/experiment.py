@@ -1,4 +1,8 @@
-﻿from __future__ import annotations
+﻿'''
+Trains models for baseline metrics.
+'''
+
+from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
