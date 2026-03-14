@@ -1,0 +1,11 @@
+pre {
+    background: #f3f4f6;
+    padding: 12px;
+    border-radius: 6px;
+    overflow-x: auto;
+}
+
+pre code {
+    color: black;
+    background: transparent;
+}

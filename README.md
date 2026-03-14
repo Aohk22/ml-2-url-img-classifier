@@ -16,39 +16,38 @@ For images, a simple PyTorch CNN trained on resized screenshots reaches **~0.933
 
 ## 2) Repository layout (relevant artifacts)
 
-### URL classification
-
-- Training/eval code (baseline on HF-provided numeric features): `src/hf_phishing_url/`
-  - Dataset loading + label mapping: `src/hf_phishing_url/data.py`
-  - Model candidates + metrics: `src/hf_phishing_url/train.py`
-  - End-to-end experiment + bundle saving: `src/hf_phishing_url/experiment.py`
-- CLI-like runner: `scripts/train_hf_phishing_url.py`
-- Notebooks:
-  - Baseline metrics on HF numeric features: `notebooks/baseline-metrics.ipynb`
-  - URL-only feature model: `notebooks/train-standard-features.ipynb`
-  - URL-only + Word2Vec embedding: `notebooks/train-standard-and-embedding.ipynb`
-  - Word2Vec module demo: `notebooks/example-word2vec-module.ipynb`
-- Saved models:
-  - URL-only features: `models/url_clf_features_only.joblib`
-  - URL-only + Word2Vec embedding: `models/url_clf_w_embedding.joblib`
-  - Baseline (bundle: metadata + best pipeline): `artifacts/hf_pirocheto_phishing_url.joblib`
-- Plots referenced in `notes.md`:
-  - `graphs/ROC-manual-features.png`, `graphs/CF-manual-features.png`
-  - `graphs/AUC-manual-features-embed.png`, `graphs/CF-manual-features-embed.png`
-
-### Image classification
-
-- Notebook training a CNN on screenshots: `notebooks/train-image-model.ipynb`
-- Saved weights: `models/img_clf_model.pt`
-- Legacy/partial attempt (TensorFlow, continued in Colab): `old-analysis/img-clf-test.ipynb`
-- Note: `scripts/train_phishing_image.py` references a `phishing_image` module that is **not present** under `src/` in this repo.
-
-### Legacy (older) URL work
-
-- Older notebooks and code under `old-analysis/`:
-  - `old-analysis/dataset_1_shashwatwork_9.41_89_column/baseline-url.ipynb`
-  - `old-analysis/dataset_2_harisudhan411_9.41_2_column/dataset2_url_classifier.ipynb`
-  - Feature/token extraction script: `old-analysis/dataset_2_harisudhan411_9.41_2_column/feature_extract.py`
+```text
+ml-2-url-img-classifier/
+├── src/
+│   └── hf_phishing_url/
+│       ├── constants.py          - dataset id + label/url column names
+│       ├── data.py               - load HF splits + label mapping + numeric feature selection
+│       ├── train.py              - candidate models + metrics + selection
+│       ├── experiment.py         - run experiment + save bundle
+│       ├── feature_extraction.py - URL tokenize/normalize + URL-only engineered features
+│       └── word2vec_embedding.py - Word2Vec URL embedding transformer
+├── scripts/
+│   └── ...
+├── notebooks/
+│   ├── baseline-metrics.ipynb              - baseline metrics on HF numeric features
+│   ├── train-standard-features.ipynb       - URL-only engineered features (HGB)
+│   ├── train-standard-and-embedding.ipynb  - URL-only + Word2Vec embedding (HGB)
+│   ├── train-image-model.ipynb             - PyTorch CNN on screenshots
+│   └── example-word2vec-module.ipynb       - Word2Vec URL embedding demo
+├── models/
+│   └── ...
+├── graphs/
+│   ├── ROC-manual-features.png       - ROC (URL-only features)
+│   ├── CF-manual-features.png        - confusion matrix (URL-only features)
+│   ├── AUC-manual-features-embed.png - AUC (URL-only + embedding)
+│   └── CF-manual-features-embed.png  - confusion matrix (URL-only + embedding)
+├── notes.md            - feature list + results summary + links to plots
+├── resources.md        - dataset links (HF/Kaggle/Zenodo)
+├── other.md            - metric definitions and evaluation notes
+└── requirements.txt    - core Python dependencies
+old-analysis/
+    └── ...
+```
 
 ## 3) URL classification: data, preprocessing, features
 
