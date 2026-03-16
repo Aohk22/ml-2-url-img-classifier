@@ -1,18 +1,20 @@
 # Model Training & Data Preprocessing Report (URLs + Images)
 
-Repository: [github.com/Aohk22/ml-2-url-img-classifier](https://github.com/Aohk22/ml-2-url-img-classifier)
-Generated: 2026-03-14
+[Repository link](https://github.com/Aohk22/ml-2-url-img-classifier).  
 
-## 1) Executive summary
+## 1) Summary
 
-This repo trains phishing detectors from:
+This repository trains phishing detectors from:
 
 - **URLs** (tabular + token/embedding features), primarily using the Hugging Face dataset `pirocheto/phishing-url`.
-- **Website screenshots** (images), using a local copy of the Zenodo dataset `8041387` (binary: phishing vs not-phishing).
+- **Website screenshots** (images), using a local copy of the Zenodo dataset `8041387`.
 
-The strongest URL results come from **pre-existing engineered features** provided by the Hugging Face dataset (87 numeric columns), where a histogram gradient boosting model reaches **ROC-AUC ~0.995** on the dataset’s held-out test split. When restricted to **URL-only features** derived directly from the URL string (39 features), validation ROC-AUC drops to ~0.955; adding a **Word2Vec URL-token embedding** increases validation ROC-AUC to ~0.974.
+The strongest URL results come from **pre-existing engineered features** provided by the Hugging Face dataset (87 numeric columns), where a histogram gradient boosting model reaches **ROC-AUC ~0.995** on the dataset’s held-out test split.
 
-For images, a simple PyTorch CNN trained on resized screenshots reaches **~0.933 validation accuracy** after 7 epochs (no separate test evaluation in the notebook).
+When restricted to **URL-only features** derived directly from the URL string (39 features), validation ROC-AUC drops to ~0.955.  
+Adding a **Word2Vec URL-token embedding** increases validation ROC-AUC back to ~0.974.
+
+For images, a simple PyTorch CNN trained on resized screenshots reaches **~0.933 validation accuracy** after 7 epochs.
 
 ## 2) Repository layout (relevant artifacts)
 
@@ -51,23 +53,14 @@ old-analysis/
 
 ## 3) URL classification: data, preprocessing, features
 
-### 3.1 Dataset used (main)
+### 3.1 Dataset used
 
-Primary dataset is Hugging Face:
+- Hugging face dataset id: `pirocheto/phishing-url`
+- Label column:  `{phishing, legitimate}` mapped to `{1, 0}`.
 
-- Dataset id: `pirocheto/phishing-url` (see `src/hf_phishing_url/constants.py`)
-- Label column: `status` with string classes `{phishing, legitimate}` mapped to `{1, 0}` by `map_labels()` in `src/hf_phishing_url/data.py`.
+### 3.2 Baseline feature set
 
-In `notebooks/train-standard-features.ipynb` and `notebooks/train-standard-and-embedding.ipynb`, the notebook loads `splits.train` and then performs a **stratified train/validation split** (`VAL_SIZE = 0.2`, `RANDOM_STATE = 42`). In `notebooks/baseline-metrics.ipynb` (and `scripts/train_hf_phishing_url.py`), training uses HF’s `train` split and final evaluation uses HF’s `test` split.
-
-### 3.2 Baseline feature set: HF-provided numeric columns
-
-The baseline code in `src/hf_phishing_url/data.py` infers features by:
-
-- dropping the URL column `url` and label column `status`
-- keeping columns that are numeric dtype
-
-This yields **87 numeric features** in the saved artifact bundle (`artifacts/hf_pirocheto_phishing_url.joblib`).
+The dataset has **87 numeric features**.
 
 Preprocessing in baseline pipelines (`src/hf_phishing_url/train.py`):
 
@@ -78,34 +71,31 @@ Preprocessing in baseline pipelines (`src/hf_phishing_url/train.py`):
   - Random Forest (`n_estimators=400`, `class_weight="balanced_subsample"`, `n_jobs=-1`)
   - HistGradientBoostingClassifier (`learning_rate=0.1`)
 
-Model selection criterion: **validation ROC-AUC** on a stratified split of the training split.
+Model selection criterion: **validation ROC-AUC**.
 
 ### 3.3 URL-only “standard features” extracted from the URL string
 
 The URL-only feature extractor is implemented in `src/hf_phishing_url/feature_extraction.py` and used in:
 
-- `notebooks/train-standard-features.ipynb` (numeric URL-only)
-- `notebooks/train-standard-and-embedding.ipynb` (URL-only + embedding)
+- `notebooks/train-standard-features.ipynb` (URL-only)
+- `notebooks/train-standard-and-embedding.ipynb` (URL-only + token embedding)
 
 #### URL normalization and tokenization
 
-Key steps (see `UrlTokenizer`):
+Key steps:
 
 - Normalize URL: if no scheme is present, prepend `http://`.
 - Parse with `urllib.parse.urlparse`.
 - Lowercase normalized URL, hostname, and path.
-- Infer:
-  - `tld`: last hostname segment (does not handle multi-part suffixes)
-  - `subdomain`: everything before `domain.tld`
 - Tokenize alphanumeric sequences via regex `[a-zA-Z0-9]+` across:
-  - full URL (`raw_tokens`)
-  - hostname (`host_tokens`)
-  - path (`path_tokens`)
-  - subdomain (`subdomain_tokens`)
+  - Full URL
+  - Hostname
+  - Path
+  - Subdomain
 
 #### Standard URL-only numeric features (39)
 
-The URL-only model uses these numeric/boolean features (inferred from `URLFeatures` typing in `src/hf_phishing_url/feature_extraction.py`; booleans encoded as 0/1):
+The URL-only model uses these numeric/boolean features:
 
 ```text
 length_url, length_hostname, ip,
@@ -128,13 +118,11 @@ Notes:
 
 ### 3.4 URL token embedding: Word2Vec pooled vector
 
-The embedding transformer is `UrlWord2VecVectorizer` in `src/hf_phishing_url/word2vec_embedding.py`:
-
-- trains a **gensim Word2Vec** model over token sequences produced by `UrlTokenizer`
-- converts each URL into a fixed-size dense vector by pooling token vectors
-  - default pooling: mean
-  - default vector size: 100
-- used via `ColumnTransformer` together with numeric features (see `notebooks/train-standard-and-embedding.ipynb`)
+- Trains a **gensim Word2Vec** model over token sequences produced by `UrlTokenizer`.
+- Converts each URL into a fixed-size dense vector by pooling token vectors.
+  - Default pooling: mean
+  - Default vector size: 100
+- Used via `ColumnTransformer` together with numeric features (see `notebooks/train-standard-and-embedding.ipynb`)
 
 Important operational detail: because the Word2Vec model is trained inside the transformer’s `fit()`, it is learned from the training fold only (as part of `Pipeline.fit`).
 
@@ -142,22 +130,18 @@ Important operational detail: because the Word2Vec model is trained inside the t
 
 ### 4.1 Baseline training (HF numeric features)
 
-Implemented in `src/hf_phishing_url/experiment.py` and executed by `scripts/train_hf_phishing_url.py`:
-
 1. Load HF splits: `load_hf_splits()` → `train` and `test` dataframes.
-2. Map labels: `status` → `{0,1}` via `map_labels()`.
+2. Map labels: `status` → `{0,1}`.
 3. Select numeric feature columns via `infer_feature_columns()`.
 4. Create internal validation split from the training split (`val_size=0.2`, stratified).
 5. Train candidate pipelines; select best by validation ROC-AUC.
 6. Refit best pipeline on full training split; evaluate on HF test split.
 7. Save bundle (metadata + model pipeline) to `artifacts/hf_pirocheto_phishing_url.joblib`.
 
-### 4.2 URL-only feature training (notebook)
-
-Implemented in `notebooks/train-standard-features.ipynb`:
+### 4.2 URL-only feature training
 
 1. Load HF training split.
-2. Extract URL-only features from the URL string via `UrlFeatureExtractor.extract_many(urls)`.
+2. Extract URL-only features from the URL string via `UrlFeatureExtractor`.
 3. Stratified train/validation split (`VAL_SIZE=0.2`).
 4. Train a `HistGradientBoostingClassifier` on the URL-only numeric feature matrix.
 5. Plot ROC curve and confusion matrix on the validation fold.
@@ -165,11 +149,9 @@ Implemented in `notebooks/train-standard-features.ipynb`:
 
 ### 4.3 URL-only + embedding training (notebook)
 
-Implemented in `notebooks/train-standard-and-embedding.ipynb`:
-
 1. Load HF training split.
-2. Extract the same URL-only numeric features, but keep the raw `url` column too.
-3. Build a `Pipeline`:
+2. Extract the same URL-only numeric features, but keep the raw URL column too.
+3. Build a pipeline:
    - `ColumnTransformer`:
      - `UrlWord2VecVectorizer()` on column `url`
      - passthrough of the 39 URL-only numeric features
@@ -182,8 +164,6 @@ Implemented in `notebooks/train-standard-and-embedding.ipynb`:
 
 ### 5.1 Baseline (HF numeric features; 87 features)
 
-From `notebooks/baseline-metrics.ipynb` and `artifacts/hf_pirocheto_phishing_url.joblib`:
-
 - Best candidate: `hgb` (HistGradientBoostingClassifier)
 - Validation metrics (internal split of HF train):
   - ROC-AUC: **0.9898**
@@ -191,12 +171,6 @@ From `notebooks/baseline-metrics.ipynb` and `artifacts/hf_pirocheto_phishing_url
   - F1: **0.9544**
   - Precision: **0.9519**
   - Recall: **0.9569**
-- Test metrics (HF test split):
-  - ROC-AUC: **0.9948**
-  - Accuracy: **0.9685**
-  - F1: **0.9686**
-  - Precision: **0.9638**
-  - Recall: **0.9735**
 
 Other candidates on validation (same notebook):
 
